@@ -1,5 +1,6 @@
 # bot.py
 from discord.ext import commands
+from discord import Embed
 from collections import defaultdict
 import discord
 
@@ -7,7 +8,9 @@ from needhelp.config import EMOJI_NUMBERS
 from needhelp.config import INTENTS
 from needhelp.additionals import show_todo
 from needhelp.additionals import parse_todo_id
+from needhelp.additionals import give_me_gif
 from needhelp import logging as log
+
 
 from bot_commands import add_todo, todo_list
 from bot_commands import task_status_change
@@ -20,11 +23,18 @@ from models import User
 
 # client = discord.Client(intents=intents)
 guild = discord.Guild
-bot = commands.Bot(command_prefix='!', intents=INTENTS) 
+bot = commands.Bot(command_prefix='!', intents=INTENTS, help_command=None) 
 
 
 @bot.command(name='todo')
 async def todo(ctx, command, *, task=None):
+    help_text = """
+Here are the commands you can use:
+- `!todo add <task>`: Adds a new task to your to-do list.
+- `!todo list`: Lists all tasks in your to-do list.
+- React to the task list message with the number of the task: Marks the task as done.
+- Reply to a todo message with `task <TASK NAME>`: Adds a new task to the existing todo.
+    """
     if command == 'add' and task is not None:
         
         log.info(f"todo message: {ctx.message}")
@@ -80,7 +90,15 @@ async def todo(ctx, command, *, task=None):
             for task in todo.tasks:
                 await message.add_reaction(EMOJI_NUMBERS[task_count])
                 task_count += 1
-
+    elif command == 'help':
+        await ctx.send(help_text)
+    else:
+        user = await bot.fetch_user(ctx.message.author.id)
+        gif_link = give_me_gif()
+        
+        embed = Embed()
+        embed.set_image(url=gif_link)
+        await user.send(help_text, embed=embed)
     # elif command == 'done' and task is not None:
     #     if task in todo_list:
     #         todo_list.remove(task)

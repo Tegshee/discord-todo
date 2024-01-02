@@ -1,3 +1,10 @@
+import requests
+import json
+import random
+import os
+from dotenv import load_dotenv
+load_dotenv()
+
 from needhelp.config import EMOJI_NUMBERS
 
 def calculate_emoji_number(number):
@@ -46,3 +53,13 @@ def parse_todo_id(message):
     
     return None
 
+def give_me_gif():
+    gif_url = 'https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExZ2N1d2liYmIzdWh3OWxjcWR4a2dmcGR0MXdvcHd0aWV5NWVxaHp3YiZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/VhuuTPyf5dGRFB5RPQ/giphy.gif'
+    if os.getenv('GIPHY_API_KEY'):
+        api_key = os.getenv('GIPHY_API_KEY')
+        api_url = f"https://api.giphy.com/v1/gifs/search?api_key={api_key}&q=wrong-answer&limit=25&offset=0&rating=g&lang=en"
+        response = requests.get(api_url)
+        data = json.loads(response.text)
+        gif_url = random.choice(data['data'])['images']['original']['url']
+        
+    return gif_url
